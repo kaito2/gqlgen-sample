@@ -24,14 +24,27 @@ func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 			Text:   "Text of 1",
 			Done:   false,
 			UserID: "a",
-			User:   nil,
+			User:   nil, // nil を返すと todoResolver.User を使って勝手に解決してくれる
 		},
 	}, nil
 }
 
+// NOTE: DB アクセスの代わりにメモリ上の配列を使用
+var users = []*model.User{
+	{
+		ID:   "a",
+		Name: "Name of a",
+	},
+}
+
 // User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	for _, user := range users {
+		if obj.UserID == user.ID {
+			return user, nil
+		}
+	}
+	return nil, fmt.Errorf("user not found (id: %s)", obj.UserID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

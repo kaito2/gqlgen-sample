@@ -2,11 +2,15 @@
 #
 # https://gqlgen.com/getting-started/
 
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
+  | FIELD_DEFINITION
+
 type Todo {
   id: ID!
   text: String!
   done: Boolean!
-  user: User!
+  userID: ID!
+  user: User! @goField(forceResolver: true)
 }
 
 type User {

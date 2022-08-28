@@ -6,45 +6,29 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/kaito2/gqlgen-sample/internal/adapter/graph/generated"
+	"github.com/kaito2/gqlgen-sample/internal/adapter/graph/transformer"
 
-	"github.com/kaito2/gqlgen-sample/graph/generated"
-	"github.com/kaito2/gqlgen-sample/graph/model"
+	generated_model "github.com/kaito2/gqlgen-sample/internal/adapter/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+func (r *mutationResolver) CreateTodo(ctx context.Context, input generated_model.NewTodo) (*generated_model.Todo, error) {
 	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
 }
 
 // Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return []*model.Todo{
-		{
-			ID:     "1",
-			Text:   "Text of 1",
-			Done:   false,
-			UserID: "a",
-			User:   nil, // nil を返すと todoResolver.User を使って勝手に解決してくれる
-		},
-	}, nil
-}
-
-// NOTE: DB アクセスの代わりにメモリ上の配列を使用
-var users = []*model.User{
-	{
-		ID:   "a",
-		Name: "Name of a",
-	},
+func (r *queryResolver) Todos(ctx context.Context) ([]*generated_model.Todo, error) {
+	return transformer.TodosFromRecords(r.DB.GetTodos()), nil
 }
 
 // User is the resolver for the user field.
-func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
-	for _, user := range users {
-		if obj.UserID == user.ID {
-			return user, nil
-		}
+func (r *todoResolver) User(ctx context.Context, obj *generated_model.Todo) (*generated_model.User, error) {
+	rec, err := r.DB.GetUser(obj.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found (id: %s)", obj.UserID)
 	}
-	return nil, fmt.Errorf("user not found (id: %s)", obj.UserID)
+	return transformer.UserFromRecord(rec), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

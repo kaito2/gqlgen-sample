@@ -14,3 +14,62 @@ go run cmd/main.go
   - e.g. https://github.com/kaito2/gqlgen-sample/blob/main/graph/schema.graphqls#L13
 - Resolver が別途定義されている model は `nil` を返しておけばよしなに解決してくれる
   - e.g. https://github.com/kaito2/gqlgen-sample/blob/main/graph/schema.resolvers.go#L27
+
+## N+1 問題
+
+再現
+
+```
+$ go run cmd/main.go
+...
+```
+
+`localhost:8080` を開いて以下の Query を実行
+
+```graphql
+query Users {
+  todos {
+    user {
+      name
+    }
+  }
+}
+```
+
+実行結果
+
+```json
+{
+  "data": {
+    "todos": [
+      {
+        "user": {
+          "name": "Name of a"
+        }
+      },
+      {
+        "user": {
+          "name": "Name of a"
+        }
+      },
+      {
+        "user": {
+          "name": "Name of b"
+        }
+      }
+    ]
+  }
+}
+```
+
+サーバーログ
+
+```
+...
+2022/08/28 19:11:55 GetTodos is called.
+2022/08/28 19:11:55 GetUser is called (id: b)
+2022/08/28 19:11:55 GetUser is called (id: a)
+2022/08/28 19:11:55 GetUser is called (id: a)
+```
+
+すべての User 解決のたびに DB Query が発行されているのがわかる。

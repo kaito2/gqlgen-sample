@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/kaito2/gqlgen-sample/internal/adapter/graph/dataloader"
 	"github.com/kaito2/gqlgen-sample/internal/adapter/graph/generated"
 	"github.com/kaito2/gqlgen-sample/internal/adapter/graph/transformer"
 
@@ -24,11 +25,7 @@ func (r *queryResolver) Todos(ctx context.Context) ([]*generated_model.Todo, err
 
 // User is the resolver for the user field.
 func (r *todoResolver) User(ctx context.Context, obj *generated_model.Todo) (*generated_model.User, error) {
-	rec, err := r.DB.GetUser(obj.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("user not found (id: %s)", obj.UserID)
-	}
-	return transformer.UserFromRecord(rec), nil
+	return dataloader.GetUser(ctx, obj.UserID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

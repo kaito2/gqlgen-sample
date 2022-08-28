@@ -30,3 +30,19 @@ func (d *DB) GetUser(userID string) (*User, error) {
 	}
 	return user, nil
 }
+
+func (d *DB) FindUsersByIDs(userIDs []string) ([]*User, error) {
+	log.Printf("FindUsersByIDs is called (ids: %+v)\n", userIDs)
+
+	users := make([]*User, len(userIDs))
+
+	for i, userID := range userIDs {
+		user, ok := dummyUsers[userID]
+		if !ok {
+			return nil, fmt.Errorf("user not found (id: %s)", userID)
+		}
+		users[i] = user
+	}
+
+	return users, nil
+}

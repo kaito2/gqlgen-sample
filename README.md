@@ -78,7 +78,7 @@ query Users {
 
 ### 改善
 
-該当リリース: 
+該当リリース: https://github.com/kaito2/gqlgen-sample/releases/tag/v0.0.3
 
 Source: https://github.com/99designs/gqlgen/blob/master/docs/content/reference/dataloaders.md
 
